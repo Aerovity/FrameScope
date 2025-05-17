@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrameScope</title>
+    <style>
+        :root {
+            --bg-dark: #0a1017;
+            --bg-card: #111a24;
+            --text-primary: #f5f5e0;
+            --text-secondary: #a0a0a0;
+            --accent-green: #8baa56;
+            --accent-orange: #e69d4f;
+            --accent-yellow: #f5f5c6;
+            --border-color: #1e2a38;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-right: 15px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .webcam-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .webcam {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            background-color: #000;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .camera-placeholder {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input, button {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+        }
+
+        input {
+            flex: 1;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        button {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-green);
+            color: #000;
+            border: none;
+        }
+
+        .btn-danger {
+            background-color: #e15241;
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        .results {
+            min-height: 100px;
+            background-color: var(--bg-dark);
+            border-radius: 6px;
+            padding: 15px;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-green);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .help-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20May%2017%2C%202025%2C%2008_10_47%20PM-QBmm9iYLf59HbfsnJByGAwtFHCb6o6.png" alt="FrameScope Logo" class="logo">
+            <h1 class="title">FrameScope</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Webcam Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Webcam Feed</h2>
+                <button id="cameraToggle" class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    Start Camera
+                </button>
+            </div>
+            <div class="webcam-container">
+                <video id="webcam" class="webcam hidden" autoplay playsinline></video>
+                <div id="placeholder" class="camera-placeholder">
+                    <p>Camera is off</p>
+                </div>
+            </div>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- Prompt Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">What do you want to search for?</h2>
+            </div>
+            <div class="input-group">
+                <input type="text" id="prompt" placeholder="Enter a prompt (e.g., 'Find books on the shelf')">
+                <button id="analyzeBtn" class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Analyze
+                </button>
+            </div>
+        </div>
+
+        <!-- Backend URL Configuration -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Backend Configuration</h2>
+            </div>
+            <div class="input-group">
+                <input type="text" id="backendUrl" value="http://localhost:8000" placeholder="Backend URL">
+            </div>
+            <p class="help-text">Enter the URL where your FastAPI backend is running</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">AI Analysis Results</h2>
+            </div>
+            <div id="loadingResults" class="loading hidden">
+                <div class="spinner"></div>
+            </div>
+            <div id="results" class="results">
+                <p style="color: var(--text-secondary); text-align: center;">Analyze a frame to see what the AI detects</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const cameraToggle = document.getElementById('cameraToggle');
+        const webcamElement = document.getElementById('webcam');
+        const placeholder = document.getElementById('placeholder');
+        const canvasElement = document.getElementById('canvas');
+        const promptInput = document.getElementById('prompt');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const backendUrlInput = document.getElementById('backendUrl');
+        const loadingResults = document.getElementById('loadingResults');
+        const resultsElement = document.getElementById('results');
+
+        // State
+        let isStreaming = false;
+        let stream = null;
+
+        // Start webcam stream
+        async function startWebcam() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480 }
+                });
+                
+                webcamElement.srcObject = stream;
+                webcamElement.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                isStreaming = true;
+                
+                cameraToggle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    Stop Camera
+                `;
+                cameraToggle.className = 'btn-danger';
+            } catch (err) {
+                console.error('Error accessing webcam:', err);
+                alert('Could not access webcam. Please check permissions.');
+            }
+        }
+
+        // Stop webcam stream
+        function stopWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                webcamElement.srcObject = null;
+                webcamElement.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                isStreaming = false;
+                
+                cameraToggle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    Start Camera
+                `;
+                cameraToggle.className = 'btn-primary';
+            }
+        }
+
+        // Capture frame and send to backend
+        async function analyzeFrame() {
+            if (!isStreaming || !promptInput.value.trim()) {
+                alert('Please start webcam and enter a prompt first');
+                return;
+            }
+
+            // Show loading state
+            loadingResults.classList.remove('hidden');
+            resultsElement.innerHTML = '';
+
+            try {
+                // Capture current frame
+                const context = canvasElement.getContext('2d');
+                canvasElement.width = webcamElement.videoWidth;
+                canvasElement.height = webcamElement.videoHeight;
+                context.drawImage(webcamElement, 0, 0);
+
+                // Convert canvas to blob
+                const blob = await new Promise(resolve => {
+                    canvasElement.toBlob(blob => resolve(blob), 'image/jpeg', 0.95);
+                });
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('image', blob, 'frame.jpg');
+                formData.append('prompt', promptInput.value);
+
+                // Send to backend
+                const response = await fetch(`${backendUrlInput.value}/analyze`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                resultsElement.innerHTML = `<p>${data.result || 'No result returned from backend'}</p>`;
+            } catch (error) {
+                console.error('Error analyzing frame:', error);
+                resultsElement.innerHTML = `<p style="color: #e15241;">Error: ${error.message || String(error)}</p>`;
+            } finally {
+                loadingResults.classList.add('hidden');
+            }
+        }
+
+        // Event Listeners
+        cameraToggle.addEventListener('click', () => {
+            if (isStreaming) {
+                stopWebcam();
+            } else {
+                startWebcam();
+            }
+        });
+
+        analyzeBtn.addEventListener('click', analyzeFrame);
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (isStreaming) {
+                stopWebcam();
+            }
+        });
+    </script>
+</body>
+</html>
