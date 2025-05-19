@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrameScope</title>
+    <style>
+        :root {
+            --bg-dark: #0a1017;
+            --bg-card: #111a24;
+            --text-primary: #f5f5e0;
+            --text-secondary: #a0a0a0;
+            --accent-green: #8baa56;
+            --accent-orange: #e69d4f;
+            --accent-yellow: #f5f5c6;
+            --border-color: #1e2a38;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-right: 15px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .webcam-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .webcam {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            background-color: #000;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .camera-placeholder {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input, button {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+        }
+
+        input {
+            flex: 1;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        button {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-green);
+            color: #000;
+            border: none;
+        }
+
+        .btn-danger {
+            background-color: #e15241;
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        .btn-warning {
+            background-color: var(--accent-orange);
+            color: #000;
+            border: none;
+        }
+
+        .results {
+            min-height: 100px;
+            background-color: var(--bg-dark);
+            border-radius: 6px;
+            padding: 15px;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-green);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .help-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        .monitoring-badge {
+            background-color: var(--accent-green);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .monitoring-badge.inactive {
+            background-color: var(--text-secondary);
+        }
+
+        .timing-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .timing-controls label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .timing-controls input {
+            width: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .monitoring-badge.active {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20May%2017%2C%202025%2C%2008_10_47%20PM-QBmm9iYLf59HbfsnJByGAwtFHCb6o6.png" alt="FrameScope Logo" class="logo">
+            <h1 class="title">FrameScope</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Webcam Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Webcam Feed</h2>
+                <button id="cameraToggle" class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    Start Camera
+                </button>
+            </div>
+            <div class="webcam-container">
+                <video id="webcam" class="webcam hidden" autoplay playsinline></video>
+                <div id="placeholder" class="camera-placeholder">
+                    <p>Camera is off</p>
+                </div>
+            </div>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- Prompt Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">What do you want to search for?</h2>
+            </div>
+            <div class="input-group">
+                <input type="text" id="prompt" placeholder="Enter a prompt (e.g., 'Find books on the shelf')">
+                <button id="analyzeBtn" class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Analyze Once
+                </button>
+            </div>
+            <div class="input-group">
+                <button id="toggleContinuousBtn" class="btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Start Continuous Monitoring
+                </button>
+                <span id="monitoringStatus" class="monitoring-badge inactive">Inactive</span>
+            </div>
+            <div class="timing-controls">
+                <label for="monitoringInterval">Interval (seconds):</label>
+                <input type="number" id="monitoringInterval" min="1" max="30" value="2">
+            </div>
+        </div>
+
+        <!-- Backend URL Configuration -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Backend Configuration</h2>
+            </div>
+            <div class="input-group">
+                <input type="text" id="backendUrl" value="http://localhost:8000" placeholder="Backend URL">
+            </div>
+            <p class="help-text">Enter the URL where your FastAPI backend is running</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">AI Analysis Results</h2>
+            </div>
+            <div id="loadingResults" class="loading hidden">
+                <div class="spinner"></div>
+            </div>
+            <div id="results" class="results">
+                <p style="color: var(--text-secondary); text-align: center;">Analyze a frame to see what the AI detects</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const cameraToggle = document.getElementById('cameraToggle');
+        const webcamElement = document.getElementById('webcam');
+        const placeholder = document.getElementById('placeholder');
+        const canvasElement = document.getElementById('canvas');
+        const promptInput = document.getElementById('prompt');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const toggleContinuousBtn = document.getElementById('toggleContinuousBtn');
+        const monitoringStatus = document.getElementById('monitoringStatus');
+        const monitoringInterval = document.getElementById('monitoringInterval');
+        const backendUrlInput = document.getElementById('backendUrl');
+        const loadingResults = document.getElementById('loadingResults');
+        const resultsElement = document.getElementById('results');
+
+        // State
+        let isStreaming = false;
+        let stream = null;
+        let isMonitoring = false;
+        let monitoringTimerId = null;
+        let errorCount = 0; // Track consecutive errors
+        let isProcessing = false; // Flag to prevent overlapping requests
+        let shouldContinue = true; // Flag to control the monitoring loop
+
+        // Start webcam stream
+        async function startWebcam() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    }
+                });
+                
+                webcamElement.srcObject = stream;
+                webcamElement.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                isStreaming = true;
+                
+                cameraToggle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    Stop Camera
+                `;
+                cameraToggle.className = 'btn-danger';
+            } catch (err) {
+                console.error('Error accessing webcam:', err);
+                alert('Could not access webcam. Please check permissions.');
+            }
+        }
+
+        // Stop webcam stream
+        function stopWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                webcamElement.srcObject = null;
+                webcamElement.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                isStreaming = false;
+                
+                // Stop monitoring if it's active
+                if (isMonitoring) {
+                    stopContinuousMonitoring();
+                }
+                
+                cameraToggle.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                    Start Camera
+                `;
+                cameraToggle.className = 'btn-primary';
+            }
+        }
+
+        // Capture frame and send to backend
+        async function analyzeFrame(isContinuous = false) {
+            if (!isStreaming || !promptInput.value.trim()) {
+                if (!isStreaming) {
+                    alert('Please start webcam first');
+                } else {
+                    alert('Please enter a prompt first');
+                }
+                
+                if (isMonitoring) {
+                    stopContinuousMonitoring();
+                }
+                
+                return;
+            }
+
+            // Prevent overlapping requests in continuous mode
+            if (isContinuous && isProcessing) {
+                console.log('Skipping frame - previous request still processing');
+                return;
+            }
+
+            // Set processing flag
+            isProcessing = true;
+
+            // Show loading state for single analysis only
+            if (!isContinuous) {
+                loadingResults.classList.remove('hidden');
+            }
+            
+            // For continuous mode, show a small indicator that we're processing
+            if (isContinuous) {
+                monitoringStatus.textContent = 'Processing...';
+            }
+
+            try {
+                // Capture current frame
+                const context = canvasElement.getContext('2d');
+                canvasElement.width = webcamElement.videoWidth;
+                canvasElement.height = webcamElement.videoHeight;
+                context.drawImage(webcamElement, 0, 0);
+
+                // Convert canvas to blob
+                const blob = await new Promise(resolve => {
+                    canvasElement.toBlob(blob => resolve(blob), 'image/jpeg', 0.85);
+                });
+
+                // Create form data - important: use boolean string for continuous parameter
+                const formData = new FormData();
+                formData.append('image', blob, 'frame.jpg');
+                formData.append('prompt', promptInput.value);
+                formData.append('continuous', String(isContinuous));  // Make sure it's a string "true" value
+
+                console.log(`Sending ${isContinuous ? 'continuous' : 'single'} analysis request`);
+                
+                // Send to backend
+                const response = await fetch(`${backendUrlInput.value}/analyze`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Response:', data);
+                
+                // Reset error count on successful request
+                errorCount = 0;
+
+                // Check for rate limiting in continuous mode
+                if (isContinuous && data.status === 'rate_limited') {
+                    console.log('Rate limited. Continuing monitoring but skipping this frame.');
+                    // Update status but don't change results
+                    monitoringStatus.textContent = 'Rate limited';
+                    setTimeout(() => {
+                        if (isMonitoring) {
+                            monitoringStatus.textContent = 'Active';
+                        }
+                    }, 1000);
+                } else {
+                    // Create a timestamp for the result
+                    const timestamp = new Date().toLocaleTimeString();
+                    
+                    // For continuous mode, just replace the content instead of prepending
+                    if (isContinuous) {
+                        const timestamp = new Date().toLocaleTimeString();
+                        resultsElement.innerHTML = `<p><strong>${timestamp}:</strong> ${data.result || 'No result returned from backend'}</p>`;
+                    } else {
+                        // For single analysis, just replace the content
+                        resultsElement.innerHTML = `<p>${data.result || 'No result returned from backend'}</p>`;
+                    }
+                    
+                    // Update status for continuous mode
+                    if (isContinuous) {
+                        monitoringStatus.textContent = 'Active';
+                    }
+                }
+            } catch (error) {
+                console.error('Error analyzing frame:', error);
+                resultsElement.innerHTML = `<p style="color: #e15241;">Error: ${error.message || String(error)}</p>`;
+                
+                // If in continuous mode and there's an error, don't immediately stop
+                // Just log the error and continue trying, unless it's been 3 consecutive errors
+                if (isContinuous) {
+                    errorCount++;
+                    if (errorCount >= 3) {
+                        console.log('Too many errors, stopping continuous monitoring');
+                        stopContinuousMonitoring();
+                    } else {
+                        monitoringStatus.textContent = 'Error';
+                        setTimeout(() => {
+                            if (isMonitoring) {
+                                monitoringStatus.textContent = 'Active';
+                            }
+                        }, 1000);
+                    }
+                }
+            } finally {
+                loadingResults.classList.add('hidden');
+                isProcessing = false; // Clear processing flag
+            }
+        }
+
+        // More reliable continuous monitoring with recursive setTimeout
+        async function continuousMonitoringLoop() {
+            if (!isMonitoring || !shouldContinue) {
+                console.log('Monitoring stopped, exiting loop');
+                return;
+            }
+
+            try {
+                // Only analyze if not currently processing
+                if (!isProcessing) {
+                    await analyzeFrame(true);
+                } else {
+                    console.log('Skipping frame - previous request still processing');
+                }
+            } catch (e) {
+                console.error('Error in monitoring loop:', e);
+            } finally {
+                // Always schedule the next iteration regardless of success/failure
+                const intervalMs = Math.max(1000, parseInt(monitoringInterval.value) * 1000);
+                monitoringTimerId = setTimeout(continuousMonitoringLoop, intervalMs);
+                console.log(`Next frame scheduled in ${intervalMs}ms`);
+            }
+        }
+
+        // Start continuous monitoring
+        function startContinuousMonitoring() {
+            if (!isStreaming) {
+                alert('Please start webcam first');
+                return;
+            }
+            
+            if (!promptInput.value.trim()) {
+                alert('Please enter a prompt first');
+                return;
+            }
+            
+            isMonitoring = true;
+            shouldContinue = true;
+            errorCount = 0; // Reset error count
+            monitoringStatus.textContent = 'Active';
+            monitoringStatus.classList.remove('inactive');
+            monitoringStatus.classList.add('active'); // Add the pulsing animation class
+            
+            toggleContinuousBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+                Stop Monitoring
+            `;
+            toggleContinuousBtn.className = 'btn-warning';
+            
+            // Disable controls while monitoring
+            promptInput.setAttribute('disabled', 'disabled');
+            monitoringInterval.setAttribute('disabled', 'disabled');
+            
+            // Clear results before starting
+            resultsElement.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Starting continuous monitoring...</p>';
+            
+            // Start the monitoring loop
+            continuousMonitoringLoop();
+        }
+        
+        // Stop continuous monitoring
+        function stopContinuousMonitoring() {
+            console.log('Stopping continuous monitoring');
+            isMonitoring = false;
+            shouldContinue = false;
+            errorCount = 0;
+            
+            // Clear the timer if it exists
+            if (monitoringTimerId) {
+                clearTimeout(monitoringTimerId);
+                monitoringTimerId = null;
+            }
+            
+            monitoringStatus.textContent = 'Inactive';
+            monitoringStatus.classList.add('inactive');
+            monitoringStatus.classList.remove('active'); // Remove the pulsing animation class
+            
+            toggleContinuousBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Start Continuous Monitoring
+            `;
+            toggleContinuousBtn.className = 'btn-secondary';
+            
+            // Re-enable controls
+            promptInput.removeAttribute('disabled');
+            monitoringInterval.removeAttribute('disabled');
+        }
+
+        // Event Listeners
+        cameraToggle.addEventListener('click', () => {
+            if (isStreaming) {
+                stopWebcam();
+            } else {
+                startWebcam();
+            }
+        });
+
+        analyzeBtn.addEventListener('click', () => analyzeFrame(false));
+        
+        toggleContinuousBtn.addEventListener('click', () => {
+            if (isMonitoring) {
+                stopContinuousMonitoring();
+            } else {
+                startContinuousMonitoring();
+            }
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (isStreaming) {
+                stopWebcam();
+            }
+            
+            if (isMonitoring) {
+                stopContinuousMonitoring();
+            }
+        });
+    </script>
+</body>
+</html>
